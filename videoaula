@@ -1,0 +1,145 @@
+import React, { useState } from "react";
+import { base44 } from "@/api/base44Client";
+import { getTema } from "@/lib/disciplinaTema";
+import { Youtube, Loader2, Search, Check, X, Pencil } from "lucide-react";
+
+// Extrai o ID de um link do YouTube (watch, youtu.be, embed, shorts, live)
+const extrairId = (url) => {
+  if (!url) return null;
+  const m = String(url).match(
+    /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/
+  );
+  return m ? m[1] : null;
+};
+
+export default function VideoAulaModulo({ modulo, tema, onAtualizado }) {
+  const t = tema || getTema(modulo.disciplina);
+  const videoId = extrairId(modulo.video_aula_url);
+  const [editando, setEditando] = useState(false);
+  const [valor, setValor] = useState(modulo.video_aula_url || "");
+  const [salvando, setSalvando] = useState(false);
+
+  const buscaUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(
+    `${modulo.titulo || ""} ${modulo.disciplina || ""} aula`
+  )}`;
+
+  const salvar = async () => {
+    setSalvando(true);
+    try {
+      const atualizado = await base44.entities.Modulo.update(modulo.id, {
+        video_aula_url: valor.trim(),
+      });
+      onAtualizado?.(atualizado);
+      setEditando(false);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  const cancelar = () => {
+    setValor(modulo.video_aula_url || "");
+    setEditando(false);
+  };
+
+  const temLink = Boolean(modulo.video_aula_url);
+  const mostrandoFormulario = editando || !temLink;
+
+  return (
+    <section className={`rounded-2xl border bg-slate-900 ${t.border} p-5 sm:p-6`}>
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <div className="flex items-center gap-2.5">
+          <span className={`flex-shrink-0 w-7 h-7 rounded-lg ${t.iconBox} flex items-center justify-center`}>
+            <Youtube className="w-4 h-4" />
+          </span>
+          <h2 className="text-sm font-semibold text-slate-200 uppercase tracking-wide">Videoaula</h2>
+        </div>
+        {temLink && !editando && (
+          <button
+            type="button"
+            onClick={() => setEditando(true)}
+            className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-100 transition-colors"
+          >
+            <Pencil className="w-3.5 h-3.5" />
+            Trocar vídeo
+          </button>
+        )}
+      </div>
+
+      {mostrandoFormulario ? (
+        <div className="space-y-3">
+          <p className="text-sm text-slate-400">
+            Cole o link da videoaula do YouTube para assistir aqui mesmo, dentro do módulo.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              type="url"
+              value={valor}
+              onChange={(e) => setValor(e.target.value)}
+              placeholder="https://www.youtube.com/watch?v=..."
+              className={`flex-1 rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none ${t.ring} focus:ring-2 transition-all`}
+            />
+            <button
+              type="button"
+              onClick={salvar}
+              disabled={salvando || !valor.trim()}
+              className={`inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl ${t.btn} text-sm font-medium transition-colors disabled:opacity-50`}
+            >
+              {salvando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+              Salvar
+            </button>
+          </div>
+          <div className="flex flex-wrap items-center gap-4">
+            <a
+              href={buscaUrl}
+              target="_blank"
+              rel="noreferrer"
+              className={`inline-flex items-center gap-1.5 text-xs font-medium ${t.link} transition-colors`}
+            >
+              <Search className="w-3.5 h-3.5" />
+              Buscar videoaula no YouTube
+            </a>
+            {editando && (
+              <button
+                type="button"
+                onClick={cancelar}
+                className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-300 transition-colors"
+              >
+                <X className="w-3.5 h-3.5" />
+                Cancelar
+              </button>
+            )}
+          </div>
+        </div>
+      ) : videoId ? (
+        <div>
+          <a
+            href={`https://www.youtube.com/watch?v=${videoId}`}
+            target="_blank"
+            rel="noreferrer"
+            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl ${t.btn} text-sm font-medium transition-colors`}
+          >
+            <Youtube className="w-4 h-4" />
+            Clique aqui para assistir no YouTube
+          </a>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <a
+            href={modulo.video_aula_url}
+            target="_blank"
+            rel="noreferrer"
+            className={`inline-flex items-center gap-2 px-4 py-3 rounded-xl ${t.btn} text-sm font-medium transition-colors`}
+          >
+            <Youtube className="w-4 h-4" />
+            Abrir videoaula no YouTube
+          </a>
+          <p className="text-xs text-slate-500">
+            Este link abre no YouTube. Para tocar dentro do módulo, use um link direto de vídeo (youtube.com/watch?v=...).
+          </p>
+        </div>
+      )}
+    </section>
+  );
+}
