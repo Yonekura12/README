@@ -1,0 +1,98 @@
+{
+  "name": "Modulo",
+  "type": "object",
+  "properties": {
+    "titulo": {
+      "type": "string",
+      "description": "Título do módulo de ensino"
+    },
+    "disciplina": {
+      "type": "string",
+      "description": "Disciplina (ex: Física, Química, Biologia, Matemática)"
+    },
+    "nivel": {
+      "type": "string",
+      "enum": [
+        "Fundamental",
+        "Médio",
+        "Superior",
+        "Técnico"
+      ],
+      "default": "Médio",
+      "description": "Nível de ensino"
+    },
+    "objetivo": {
+      "type": "string",
+      "description": "Objetivo de aprendizagem do módulo"
+    },
+    "contexto": {
+      "type": "string",
+      "description": "Contexto em que o tema se insere"
+    },
+    "situacao_problema": {
+      "type": "string",
+      "description": "Situação-problema disparadora"
+    },
+    "diagnostico": {
+      "type": "string",
+      "description": "Diagnóstico de conhecimentos prévios"
+    },
+    "investigacao": {
+      "type": "string",
+      "description": "Investigação e levantamento de hipóteses"
+    },
+    "explicacao_conceitual": {
+      "type": "string",
+      "description": "Explicação conceitual do tema"
+    },
+    "visualizacao_url": {
+      "type": "string",
+      "description": "URL de imagem, esquema, gráfico ou animação"
+    },
+    "visualizacao_descricao": {
+      "type": "string",
+      "description": "Descrição/explicação da visualização"
+    },
+    "matematica_aplicada": {
+      "type": "string",
+      "description": "Matemática aplicada, quando pertinente"
+    },
+    "interacao_simulacao": {
+      "type": "string",
+      "description": "Proposta de interação ou simulação"
+    },
+    "aplicacao_cotidiano": {
+      "type": "string",
+      "description": "Aplicação no cotidiano, tecnologia, sociedade ou ambiente"
+    },
+    "questao_enem": {
+      "type": "string",
+      "description": "Questão no estilo ENEM ou situação-problema equivalente"
+    },
+    "atividade_consolidacao": {
+      "type": "string",
+      "description": "Atividade de consolidação"
+    },
+    "avaliacao_feedback": {
+      "type": "string",
+      "description": "Avaliação e feedback"
+    },
+    "revisao_remediacao": {
+      "type": "string",
+      "description": "Revisão e remediação"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Rascunho",
+        "Publicado"
+      ],
+      "default": "Rascunho",
+      "description": "Status do módulo"
+    }
+  },
+  "required": [
+    "titulo",
+    "disciplina"
+  ]
+}
