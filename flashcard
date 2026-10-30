@@ -1,0 +1,23 @@
+{
+  "name": "Flashcard",
+  "type": "object",
+  "properties": {
+    "modulo_id": {
+      "type": "string",
+      "description": "ID do módulo ao qual o flashcard pertence"
+    },
+    "frente": {
+      "type": "string",
+      "description": "Texto da frente do card (pergunta ou conceito)"
+    },
+    "verso": {
+      "type": "string",
+      "description": "Texto do verso do card (resposta ou definição)"
+    }
+  },
+  "required": [
+    "modulo_id",
+    "frente",
+    "verso"
+  ]
+}
