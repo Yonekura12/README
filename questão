@@ -1,0 +1,54 @@
+{
+  "name": "Questao",
+  "type": "object",
+  "properties": {
+    "modulo_id": {
+      "type": "string",
+      "description": "ID do módulo ao qual a questão pertence"
+    },
+    "enunciado": {
+      "type": "string",
+      "description": "Enunciado da questão"
+    },
+    "alt_a": {
+      "type": "string",
+      "description": "Alternativa A"
+    },
+    "alt_b": {
+      "type": "string",
+      "description": "Alternativa B"
+    },
+    "alt_c": {
+      "type": "string",
+      "description": "Alternativa C"
+    },
+    "alt_d": {
+      "type": "string",
+      "description": "Alternativa D"
+    },
+    "alt_e": {
+      "type": "string",
+      "description": "Alternativa E"
+    },
+    "correta": {
+      "type": "string",
+      "enum": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e"
+      ],
+      "description": "Letra da alternativa correta"
+    },
+    "explicacao": {
+      "type": "string",
+      "description": "Explicação da resposta correta"
+    }
+  },
+  "required": [
+    "modulo_id",
+    "enunciado",
+    "correta"
+  ]
+}
