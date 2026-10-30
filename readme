@@ -1,0 +1,121 @@
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { base44 } from "@/api/base44Client";
+import { Plus, BookOpen, Sparkles, Loader2 } from "lucide-react";
+import ModuloCard from "@/components/ModuloCard";
+
+export default function Home() {
+  const [modulos, setModulos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filtro, setFiltro] = useState("Todos");
+
+  useEffect(() => {
+    carregarModulos();
+  }, []);
+
+  const carregarModulos = async () => {
+    try {
+      const dados = await base44.entities.Modulo.list("-created_date", 100);
+      setModulos(dados || []);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const disciplinas = ["Todos", ...new Set(modulos.map((m) => m.disciplina).filter(Boolean))];
+  const modulosFiltrados = (filtro === "Todos" ? modulos : modulos.filter((m) => m.disciplina === filtro))
+    .slice()
+    .sort((a, b) => (a.titulo || "").localeCompare(b.titulo || "", "pt-BR"));
+
+  return (
+    <div className="min-h-screen bg-slate-950">
+      {/* Header */}
+      <header className="bg-slate-900/80 border-b border-slate-800 sticky top-0 z-10 backdrop-blur-md">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-indigo-500 flex items-center justify-center shadow-sm shadow-indigo-500/20">
+              <BookOpen className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-base font-semibold text-slate-100 leading-tight">Aula Estruturada</h1>
+              <p className="text-xs text-slate-400 leading-tight">Plataforma de ensino para professores</p>
+            </div>
+          </div>
+          <Link
+            to="/novo"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-500 text-white text-sm font-medium hover:bg-indigo-600 transition-colors shadow-sm shadow-indigo-500/20"
+          >
+            <Plus className="w-4 h-4" />
+            Novo módulo
+          </Link>
+        </div>
+      </header>
+
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        {/* Hero */}
+        <div className="mb-10">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/15 text-indigo-300 text-xs font-medium mb-4">
+            <Sparkles className="w-3.5 h-3.5" />
+            Escolha o que lecionar hoje
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-bold text-slate-100 tracking-tight mb-3">
+            Seus módulos de aula
+          </h2>
+          <p className="text-slate-400 max-w-2xl leading-relaxed">
+            Cada módulo segue uma estrutura pedagógica completa: da abertura à remediação.
+            Crie, organize e compartilhe aulas alinhadas à abordagem investigativa.
+          </p>
+        </div>
+
+        {/* Filtros */}
+        {disciplinas.length > 1 && (
+          <div className="flex flex-wrap gap-2 mb-8">
+            {disciplinas.map((d) => (
+              <button
+                key={d}
+                onClick={() => setFiltro(d)}
+                className={`px-3.5 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  filtro === d
+                    ? "bg-slate-100 text-slate-900"
+                    : "bg-slate-900 text-slate-400 border border-slate-800 hover:border-slate-700"
+                }`}
+              >
+                {d}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Lista */}
+        {loading ? (
+          <div className="flex items-center justify-center py-24">
+            <Loader2 className="w-6 h-6 text-indigo-400 animate-spin" />
+          </div>
+        ) : modulosFiltrados.length === 0 ? (
+          <div className="text-center py-24">
+            <div className="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center mx-auto mb-4">
+              <BookOpen className="w-7 h-7 text-slate-500" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-100 mb-1">Nenhum módulo ainda</h3>
+            <p className="text-slate-400 text-sm mb-6">Crie seu primeiro módulo de aula estruturado.</p>
+            <Link
+              to="/novo"
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-indigo-500 text-white text-sm font-medium hover:bg-indigo-600 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Criar módulo
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {modulosFiltrados.map((m) => (
+              <ModuloCard key={m.id} modulo={m} />
+            ))}
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
