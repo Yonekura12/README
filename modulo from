@@ -1,0 +1,264 @@
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { base44 } from "@/api/base44Client";
+import { getTema } from "@/lib/disciplinaTema";
+import {
+  ArrowLeft,
+  Loader2,
+  Save,
+  Target,
+  AlertCircle,
+  Stethoscope,
+  Search,
+  BookText,
+  Image as ImageIcon,
+  Calculator,
+  MousePointerClick,
+  Globe,
+  HelpCircle,
+  ClipboardCheck,
+  CheckCircle2,
+  RefreshCw,
+} from "lucide-react";
+import CampoSecao from "@/components/CampoSecao";
+
+export default function ModuloForm() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const editando = Boolean(id);
+
+  const [dados, setDados] = useState({
+    titulo: "",
+    disciplina: "",
+    nivel: "Médio",
+    objetivo: "",
+    contexto: "",
+    situacao_problema: "",
+    diagnostico: "",
+    investigacao: "",
+    explicacao_conceitual: "",
+    visualizacao_url: "",
+    visualizacao_descricao: "",
+    matematica_aplicada: "",
+    interacao_simulacao: "",
+    aplicacao_cotidiano: "",
+    questao_enem: "",
+    atividade_consolidacao: "",
+    avaliacao_feedback: "",
+    revisao_remediacao: "",
+    status: "Rascunho",
+  });
+  const [loading, setLoading] = useState(editando);
+  const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState("");
+
+  useEffect(() => {
+    if (!editando) return;
+    (async () => {
+      try {
+        const m = await base44.entities.Modulo.get(id);
+        setDados((prev) => ({ ...prev, ...m }));
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [id, editando]);
+
+  const set = (campo) => (valor) => setDados((prev) => ({ ...prev, [campo]: valor }));
+
+  const tema = getTema(dados.disciplina);
+
+  const salvar = async (e) => {
+    e.preventDefault();
+    setErro("");
+    if (!dados.titulo.trim() || !dados.disciplina.trim()) {
+      setErro("Título e disciplina são obrigatórios.");
+      return;
+    }
+    setSalvando(true);
+    try {
+      if (editando) {
+        await base44.entities.Modulo.update(id, dados);
+        navigate(`/modulo/${id}`);
+      } else {
+        const criado = await base44.entities.Modulo.create(dados);
+        navigate(`/modulo/${criado.id}`);
+      }
+    } catch (e) {
+      console.error(e);
+      setErro("Não foi possível salvar. Tente novamente.");
+      setSalvando(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950">
+        <Loader2 className="w-6 h-6 text-indigo-400 animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-950">
+      <form onSubmit={salvar}>
+        {/* Header fixo */}
+        <header className="bg-slate-900/80 border-b border-slate-800 sticky top-0 z-10 backdrop-blur-md">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={() => navigate(editando ? `/modulo/${id}` : "/")}
+              className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-100 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Cancelar
+            </button>
+            <div className="flex items-center gap-2">
+              <select
+                value={dados.status}
+                onChange={(e) => set("status")(e.target.value)}
+                className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm font-medium text-slate-200 focus:outline-none focus:border-slate-500"
+              >
+                <option value="Rascunho">Rascunho</option>
+                <option value="Publicado">Publicado</option>
+              </select>
+              <button
+                type="submit"
+                disabled={salvando}
+                className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl ${tema.btn} text-sm font-medium transition-colors disabled:opacity-50`}
+              >
+                {salvando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                Salvar módulo
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-5">
+          {/* Identificação */}
+          <div className={`rounded-2xl border bg-slate-900 ${tema.border} p-5 sm:p-6`}>
+            <h2 className={`text-sm font-semibold ${tema.iconAccent} mb-4 uppercase tracking-wide`}>Identificação</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1.5">Título do módulo *</label>
+                <input
+                  type="text"
+                  value={dados.titulo}
+                  onChange={(e) => set("titulo")(e.target.value)}
+                  placeholder="Ex: Movimento Retilíneo Uniforme"
+                  className={`w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none ${tema.ring} focus:ring-2 transition-all`}
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-1.5">Disciplina *</label>
+                  <input
+                    type="text"
+                    value={dados.disciplina}
+                    onChange={(e) => set("disciplina")(e.target.value)}
+                    placeholder="Ex: Física, Biologia, Robótica, Química"
+                    className={`w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none ${tema.ring} focus:ring-2 transition-all`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-1.5">Nível</label>
+                  <select
+                    value={dados.nivel}
+                    onChange={(e) => set("nivel")(e.target.value)}
+                    className={`w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 focus:outline-none ${tema.ring} focus:ring-2 transition-all`}
+                  >
+                    <option value="Fundamental">Fundamental</option>
+                    <option value="Médio">Médio</option>
+                    <option value="Superior">Superior</option>
+                    <option value="Técnico">Técnico</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 1. Abertura */}
+          <CampoSecao numero={1} label="Objetivo de aprendizagem" icon={Target} value={dados.objetivo} onChange={set("objetivo")} placeholder="O que o aluno deve ser capaz de compreender ou fazer ao final?" tema={tema} />
+          <CampoSecao numero={1} label="Contexto" icon={Target} value={dados.contexto} onChange={set("contexto")} placeholder="Em que contexto o tema se insere? Por que é relevante?" tema={tema} />
+
+          {/* 2. Situação-problema */}
+          <CampoSecao numero={2} label="Situação-problema" icon={AlertCircle} value={dados.situacao_problema} onChange={set("situacao_problema")} placeholder="Apresente um problema disparador que desperte a curiosidade." tema={tema} />
+
+          {/* 3. Diagnóstico */}
+          <CampoSecao numero={3} label="Diagnóstico de conhecimentos prévios" icon={Stethoscope} value={dados.diagnostico} onChange={set("diagnostico")} placeholder="Levantar o que os alunos já sabem sobre o tema." tema={tema} />
+
+          {/* 4. Investigação */}
+          <CampoSecao numero={4} label="Investigação e hipóteses" icon={Search} value={dados.investigacao} onChange={set("investigacao")} placeholder="Proposta de investigação e hipóteses a serem testadas." tema={tema} />
+
+          {/* 5. Explicação conceitual */}
+          <CampoSecao numero={5} label="Explicação conceitual" icon={BookText} value={dados.explicacao_conceitual} onChange={set("explicacao_conceitual")} placeholder="Desenvolvimento dos conceitos-chave do tema." rows={6} tema={tema} />
+
+          {/* 6. Visualização */}
+          <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5 sm:p-6">
+            <div className="flex items-center gap-2.5 mb-3">
+              <span className={`flex-shrink-0 w-7 h-7 rounded-lg ${tema.soft} flex items-center justify-center text-xs font-semibold`}>6</span>
+              <ImageIcon className="w-4 h-4 text-slate-500" />
+              <label className="text-sm font-semibold text-slate-200">Visualização (imagem, esquema, gráfico ou animação)</label>
+            </div>
+            <div className="space-y-3">
+              <input
+                type="url"
+                value={dados.visualizacao_url}
+                onChange={(e) => set("visualizacao_url")(e.target.value)}
+                placeholder="URL da imagem (https://...)"
+                className={`w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none ${tema.ring} focus:ring-2 transition-all`}
+              />
+              <textarea
+                value={dados.visualizacao_descricao}
+                onChange={(e) => set("visualizacao_descricao")(e.target.value)}
+                placeholder="Descrição e explicação da visualização"
+                rows={3}
+                className={`w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none ${tema.ring} focus:ring-2 transition-all resize-y`}
+              />
+            </div>
+          </div>
+
+          {/* 7. Matemática aplicada */}
+          <CampoSecao numero={7} label="Matemática aplicada" icon={Calculator} value={dados.matematica_aplicada} onChange={set("matematica_aplicada")} placeholder="Fórmulas, cálculos e modelagem matemática, quando pertinente." tema={tema} />
+
+          {/* 8. Interação ou simulação */}
+          <CampoSecao numero={8} label="Interação ou simulação" icon={MousePointerClick} value={dados.interacao_simulacao} onChange={set("interacao_simulacao")} placeholder="Proposta de atividade interativa ou simulação (PhET, experimento, etc.)." tema={tema} />
+
+          {/* 9. Aplicação cotidiano */}
+          <CampoSecao numero={9} label="Aplicação — Cotidiano, tecnologia, sociedade e ambiente" icon={Globe} value={dados.aplicacao_cotidiano} onChange={set("aplicacao_cotidiano")} placeholder="Como o tema se aplica à vida real, tecnologia, sociedade e meio ambiente." tema={tema} />
+
+          {/* 10. Questão ENEM */}
+          <CampoSecao numero={10} label="Questão estilo ENEM" icon={HelpCircle} value={dados.questao_enem} onChange={set("questao_enem")} placeholder="Enunciado + alternativas no estilo ENEM." rows={6} tema={tema} />
+
+          {/* 11. Atividade de consolidação */}
+          <CampoSecao numero={11} label="Atividade de consolidação" icon={ClipboardCheck} value={dados.atividade_consolidacao} onChange={set("atividade_consolidacao")} placeholder="Exercícios e atividades para fixar o aprendizado." tema={tema} />
+
+          {/* 12. Avaliação e feedback */}
+          <CampoSecao numero={12} label="Avaliação e feedback" icon={CheckCircle2} value={dados.avaliacao_feedback} onChange={set("avaliacao_feedback")} placeholder="Como avaliar e fornecer feedback aos alunos." tema={tema} />
+
+          {/* 13. Revisão/remediação */}
+          <CampoSecao numero={13} label="Revisão e remediação" icon={RefreshCw} value={dados.revisao_remediacao} onChange={set("revisao_remediacao")} placeholder="Estratégias de revisão e recuperação para quem teve dificuldades." tema={tema} />
+
+          {erro && (
+            <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
+              {erro}
+            </div>
+          )}
+
+          <div className="pb-8">
+            <button
+              type="submit"
+              disabled={salvando}
+              className={`w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl ${tema.btn} text-sm font-medium transition-colors disabled:opacity-50`}
+            >
+              {salvando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              {editando ? "Salvar alterações" : "Criar módulo"}
+            </button>
+          </div>
+        </main>
+      </form>
+    </div>
+  );
+}
